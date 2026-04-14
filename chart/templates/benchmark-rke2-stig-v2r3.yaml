@@ -1,0 +1,11 @@
+---
+apiVersion: compliance.cattle.io/v1
+kind: ClusterScanBenchmark
+metadata:
+  name: rke2-stig-v2r3
+spec:
+  clusterProvider: rke2
+  minKubernetesVersion: "1.28.0"
+  stigVersion: "V2"
+  stigRelease: "R3"
+  stigReleaseDate: "2025-10-01"
