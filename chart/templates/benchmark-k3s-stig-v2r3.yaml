@@ -6,6 +6,6 @@ metadata:
 spec:
   clusterProvider: k3s
   minKubernetesVersion: "1.28.0"
-  stigVersion: "V1"
-  stigRelease: "R1"
+  stigVersion: "V2"
+  stigRelease: "R3"
   stigReleaseDate: "2025-10-01"

@@ -1,4 +1,3 @@
-
 ---
 apiVersion: compliance.cattle.io/v1
 kind: ClusterScanProfile

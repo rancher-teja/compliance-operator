@@ -172,42 +172,57 @@ func (c *Controller) getScanSummary(outputBytes []byte) (*v1.ClusterScanSummary,
 	return scanSummary, nil
 }
 
-func (c *Controller) createClusterScanReport(ctx context.Context, outputBytes []byte, scan *v1.ClusterScan) (*v1.ClusterScanReport, error) {
+func (c *Controller) createClusterScanReport(
+	ctx context.Context,
+	outputBytes []byte,
+	scan *v1.ClusterScan,
+) (*v1.ClusterScanReport, error) {
+
 	scanReport := &v1.ClusterScanReport{
 		ObjectMeta: metav1.ObjectMeta{
 			GenerateName: name.SafeConcatName("scan-report", scan.Name, scan.Spec.ScanProfileName) + "-",
 		},
 	}
+
 	profile, err := c.getClusterScanProfile(ctx, scan)
 	if err != nil {
-		return nil, fmt.Errorf("Error %v loading v1.ClusterScanProfile for name %w", scan.Spec.ScanProfileName, err)
+		return nil, fmt.Errorf("error loading ClusterScanProfile %s: %w", scan.Spec.ScanProfileName, err)
 	}
+
 	scanReport.Spec.BenchmarkVersion = profile.Spec.BenchmarkVersion
 	scanReport.Spec.LastRunTimestamp = time.Now().String()
 
+	// 1. Gather Metadata
+	stigV, stigR := "N/A", "N/A"
 	benchmark, err := c.getClusterScanBenchmark(profile)
 	if err != nil {
-		return nil, fmt.Errorf("Error %w loading ClusterScanBenchmark %v", err, profile.Spec.BenchmarkVersion)
+		logrus.Warnf("could not fetch benchmark %v: %v", profile.Spec.BenchmarkVersion, err)
+	} else {
+		stigV = benchmark.Spec.STIGVersion
+		stigR = benchmark.Spec.STIGRelease
 	}
-	scanReport.Spec.STIGVersion = benchmark.Spec.STIGVersion
-	scanReport.Spec.STIGRelease = benchmark.Spec.STIGRelease
 
-	data, err := reportLibrary.GetJSONBytes(outputBytes)
+	// 2. Create the Metadata Struct (The Contract)
+	metadata := reportLibrary.ComplianceMetadata{
+		STIGVersion:      stigV,
+		STIGRelease:      stigR,
+		ProfileName:      profile.Name,
+		BenchmarkVersion: profile.Spec.BenchmarkVersion,
+		Annotations:      profile.Annotations,
+	}
+
+	// 3. Call GetJSONBytes with the Metadata
+	// Note: We no longer need a separate 'injectFullMetadata' step
+	data, err := reportLibrary.GetJSONBytes(outputBytes, metadata)
 	if err != nil {
-		return nil, fmt.Errorf("Error %w loading scan report json bytes", err)
+		return nil, fmt.Errorf("error loading scan report json bytes: %w", err)
 	}
 
-	// If this is a STIG benchmark, inject version/release into the report JSON
-	// so it appears at the bottom of the downloaded CSV report.
-	if benchmark.Spec.STIGVersion != "" || benchmark.Spec.STIGRelease != "" {
-		data, err = injectStigMetadata(data, benchmark.Spec.STIGVersion, benchmark.Spec.STIGRelease)
-		if err != nil {
-			return nil, fmt.Errorf("Error %w injecting STIG metadata into report JSON", err)
-		}
-	}
+	scanReport.Spec.ReportJSON = string(data)
+	scanReport.Spec.STIGVersion = stigV
+	scanReport.Spec.STIGRelease = stigR
 
-	scanReport.Spec.ReportJSON = string(data[:])
-
+	// ---------- OWNER REF ----------
 	ownerRef := metav1.OwnerReference{
 		APIVersion: "compliance.cattle.io/v1",
 		Kind:       "ClusterScan",
@@ -219,25 +234,62 @@ func (c *Controller) createClusterScanReport(ctx context.Context, outputBytes []
 	return scanReport, nil
 }
 
-// injectStigMetadata unmarshals the report JSON, adds STIG fields, and re-marshals it.
-// The dashboard reads ReportJSON to build the CSV, so adding fields here
-// means they appear in the downloaded report without any dashboard changes.
-func injectStigMetadata(reportJSON []byte, stigVersion, stigRelease string) ([]byte, error) {
-	// unmarshal into a generic map so we don't couple to the security-scan Report struct
-	var reportMap map[string]interface{}
-	if err := json.Unmarshal(reportJSON, &reportMap); err != nil {
-		return nil, fmt.Errorf("error unmarshalling report JSON: %w", err)
-	}
+// func injectFullMetadata(
+// 	reportJSON []byte,
+// 	profile *v1.ClusterScanProfile,
+// 	stigVersion, stigRelease string,
+// ) ([]byte, error) {
 
-	reportMap["stigVersion"] = stigVersion
-	reportMap["stigRelease"] = stigRelease
+// 	var report reportLibrary.Report
+// 	if err := json.Unmarshal(reportJSON, &report); err != nil {
+// 		return nil, fmt.Errorf("error unmarshalling report: %w", err)
+// 	}
 
-	injected, err := json.Marshal(reportMap)
-	if err != nil {
-		return nil, fmt.Errorf("error marshalling report JSON with STIG metadata: %w", err)
-	}
-	return injected, nil
-}
+// 	// ---------- SECTION 1: STIG ----------
+// 	stigGroup := &reportLibrary.Group{
+// 		ID:   "Z1-STIG-METADATA",
+// 		Text: "Compliance Standard (STIG)",
+// 		Checks: []*reportLibrary.Check{
+// 			{ID: "STIG Version", Text: stigVersion, State: reportLibrary.NotApplicable},
+// 			{ID: "STIG Release", Text: stigRelease, State: reportLibrary.NotApplicable},
+// 		},
+// 	}
+
+// 	// ---------- SECTION 2: PROFILE ----------
+// 	profileChecks := []*reportLibrary.Check{
+// 		{ID: "Profile Name", Text: profile.Name, State: reportLibrary.NotApplicable},
+// 		{ID: "Benchmark Version", Text: profile.Spec.BenchmarkVersion, State: reportLibrary.NotApplicable},
+// 	}
+
+// 	// Add annotations (important for your case)
+// 	for k, v := range profile.Annotations {
+// 		profileChecks = append(profileChecks, &reportLibrary.Check{
+// 			ID:    fmt.Sprintf("Annotation: %s", k),
+// 			Text:  v,
+// 			State: reportLibrary.NotApplicable,
+// 		})
+// 	}
+
+// 	// Add labels (optional but useful)
+// 	for k, v := range profile.Labels {
+// 		profileChecks = append(profileChecks, &reportLibrary.Check{
+// 			ID:    fmt.Sprintf("Label: %s", k),
+// 			Text:  v,
+// 			State: reportLibrary.NotApplicable,
+// 		})
+// 	}
+
+// 	profileGroup := &reportLibrary.Group{
+// 		ID:     "Z2-PROFILE-INFO",
+// 		Text:   "Scan Profile Details",
+// 		Checks: profileChecks,
+// 	}
+
+// 	// ---------- APPEND ----------
+// 	report.Results = append(report.Results, stigGroup, profileGroup)
+
+// 	return json.Marshal(report)
+// }
 
 func (c *Controller) ensureCleanup(scan *v1.ClusterScan) error {
 	var err error

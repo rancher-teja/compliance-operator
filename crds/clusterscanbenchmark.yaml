@@ -47,6 +47,15 @@ spec:
               minKubernetesVersion:
                 nullable: true
                 type: string
+              stigRelease:
+                nullable: true
+                type: string
+              stigReleaseDate:
+                nullable: true
+                type: string
+              stigVersion:
+                nullable: true
+                type: string
             type: object
         type: object
     served: true
