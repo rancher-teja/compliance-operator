@@ -32,6 +32,12 @@ spec:
               reportJSON:
                 nullable: true
                 type: string
+              stigRelease:
+                nullable: true
+                type: string
+              stigVersion:
+                nullable: true
+                type: string
             type: object
         type: object
     served: true

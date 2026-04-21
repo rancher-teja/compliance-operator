@@ -153,7 +153,7 @@ func (c *Controller) getScanResults(ctx context.Context, scan *v1.ClusterScan) (
 }
 
 func (c *Controller) getScanSummary(outputBytes []byte) (*v1.ClusterScanSummary, error) {
-	r, err := report.Get(outputBytes)
+	r, err := report.Get(outputBytes, report.ComplianceMetadata{})
 	if err != nil {
 		return nil, err
 	}
@@ -171,25 +171,56 @@ func (c *Controller) getScanSummary(outputBytes []byte) (*v1.ClusterScanSummary,
 	return scanSummary, nil
 }
 
-func (c *Controller) createClusterScanReport(ctx context.Context, outputBytes []byte, scan *v1.ClusterScan) (*v1.ClusterScanReport, error) {
+func (c *Controller) createClusterScanReport(
+	ctx context.Context,
+	outputBytes []byte,
+	scan *v1.ClusterScan,
+) (*v1.ClusterScanReport, error) {
+
 	scanReport := &v1.ClusterScanReport{
 		ObjectMeta: metav1.ObjectMeta{
 			GenerateName: name.SafeConcatName("scan-report", scan.Name, scan.Spec.ScanProfileName) + "-",
 		},
 	}
+
 	profile, err := c.getClusterScanProfile(ctx, scan)
 	if err != nil {
-		return nil, fmt.Errorf("Error %v loading v1.ClusterScanProfile for name %w", scan.Spec.ScanProfileName, err)
+		return nil, fmt.Errorf("error loading ClusterScanProfile %s: %w", scan.Spec.ScanProfileName, err)
 	}
+
 	scanReport.Spec.BenchmarkVersion = profile.Spec.BenchmarkVersion
 	scanReport.Spec.LastRunTimestamp = time.Now().String()
 
-	data, err := reportLibrary.GetJSONBytes(outputBytes)
+	// 1. Gather Metadata
+	stigV, stigR := "N/A", "N/A"
+	benchmark, err := c.getClusterScanBenchmark(profile)
 	if err != nil {
-		return nil, fmt.Errorf("Error %w loading scan report json bytes", err)
+		logrus.Warnf("could not fetch benchmark %v: %v", profile.Spec.BenchmarkVersion, err)
+	} else {
+		stigV = benchmark.Spec.STIGVersion
+		stigR = benchmark.Spec.STIGRelease
 	}
-	scanReport.Spec.ReportJSON = string(data[:])
 
+	// 2. Create the Metadata Struct (The Contract)
+	metadata := reportLibrary.ComplianceMetadata{
+		STIGVersion:      stigV,
+		STIGRelease:      stigR,
+		ProfileName:      profile.Name,
+		BenchmarkVersion: profile.Spec.BenchmarkVersion,
+		Annotations:      profile.Annotations,
+	}
+
+	// 3. Call GetJSONBytes with the Metadata
+	data, err := reportLibrary.GetJSONBytes(outputBytes, metadata)
+	if err != nil {
+		return nil, fmt.Errorf("error loading scan report json bytes: %w", err)
+	}
+
+	scanReport.Spec.ReportJSON = string(data)
+	scanReport.Spec.STIGVersion = stigV
+	scanReport.Spec.STIGRelease = stigR
+
+	// ---------- OWNER REF ----------
 	ownerRef := metav1.OwnerReference{
 		APIVersion: "compliance.cattle.io/v1",
 		Kind:       "ClusterScan",
@@ -197,7 +228,6 @@ func (c *Controller) createClusterScanReport(ctx context.Context, outputBytes []
 		UID:        scan.GetUID(),
 	}
 	scanReport.ObjectMeta.OwnerReferences = append(scanReport.ObjectMeta.OwnerReferences, ownerRef)
-
 	return scanReport, nil
 }
 

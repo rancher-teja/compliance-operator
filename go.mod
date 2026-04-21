@@ -2,6 +2,8 @@ module github.com/rancher/compliance-operator
 
 go 1.25.7
 
+replace github.com/rancher/security-scan => github.com/rancher-teja/security-scan v0.8.0-rc.1.0.20260416110111-aa4ec6f4c14a
+
 require (
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.90.1
@@ -22,7 +24,7 @@ require (
 )
 
 require (
-	github.com/aquasecurity/kube-bench v0.14.1 // indirect
+	github.com/aquasecurity/kube-bench v0.15.0 // indirect
 	github.com/aws/aws-sdk-go-v2 v1.41.1 // indirect
 	github.com/aws/aws-sdk-go-v2/service/securityhub v1.67.3 // indirect
 	github.com/aws/smithy-go v1.24.0 // indirect

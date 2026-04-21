@@ -16,8 +16,8 @@ github.com/PuerkitoBio/purell v1.0.0/go.mod h1:c11w/QuzBsJSee3cPx9rAFu61PvFxuPbt
 github.com/PuerkitoBio/urlesc v0.0.0-20160726150825-5bd2802263f2/go.mod h1:uGdkoq3SwY9Y+13GIhn11/XLaGBb4BfwItxLd5jeuXE=
 github.com/antlr4-go/antlr/v4 v4.13.0 h1:lxCg3LAv+EUK6t1i0y1V6/SLeUi0eKEKdhQAlS8TVTI=
 github.com/antlr4-go/antlr/v4 v4.13.0/go.mod h1:pfChB/xh/Unjila75QW7+VU4TSnWnnk9UTnmpPaOR2g=
-github.com/aquasecurity/kube-bench v0.14.1 h1:Z/NcXfuwIQJ8jJQ5Qy2QXXVuBkJiIekl/oQ/rM56phA=
-github.com/aquasecurity/kube-bench v0.14.1/go.mod h1:Rhb4OXJYLq51jSiEC001GtdsjGY+J65SJINDYhsuckE=
+github.com/aquasecurity/kube-bench v0.15.0 h1:KTP+OAZNbWNdYSjpspBOBeAZKYrGtS27HF85kYaR+PE=
+github.com/aquasecurity/kube-bench v0.15.0/go.mod h1:DeuORjfZuobE94fcG+tl3XLrtdJj3xP+iJAuDObWAf4=
 github.com/aws/aws-sdk-go-v2 v1.41.1 h1:ABlyEARCDLN034NhxlRUSZr4l71mh+T5KAeGh6cerhU=
 github.com/aws/aws-sdk-go-v2 v1.41.1/go.mod h1:MayyLB8y+buD9hZqkCW3kX1AKq07Y5pXxtgB+rRFhz0=
 github.com/aws/aws-sdk-go-v2/service/securityhub v1.67.3 h1:FEs3IkfJWp+Sz3ZY6sAxmebBF0lr1wBcTWkuFW1OFJg=
@@ -221,12 +221,12 @@ github.com/prometheus/common v0.66.1 h1:h5E0h5/Y8niHc5DlaLlWLArTQI7tMrsfQjHV+d9Z
 github.com/prometheus/common v0.66.1/go.mod h1:gcaUsgf3KfRSwHY4dIMXLPV0K/Wg1oZ8+SbZk/HH/dA=
 github.com/prometheus/procfs v0.16.1 h1:hZ15bTNuirocR6u0JZ6BAHHmwS1p8B4P6MRqxtzMyRg=
 github.com/prometheus/procfs v0.16.1/go.mod h1:teAbpZRB1iIAJYREa1LsoWUXykVXA1KlTmWl8x/U+Is=
+github.com/rancher-teja/security-scan v0.8.0-rc.1.0.20260416110111-aa4ec6f4c14a h1:5Hv+hSpCnkQoR43Iax2oAVJXfRMF/LhctDE2CvCz1gI=
+github.com/rancher-teja/security-scan v0.8.0-rc.1.0.20260416110111-aa4ec6f4c14a/go.mod h1:jFIjW0TeLyPsO7KerBoFgTjJq4KCJo8a4dU3BAHS2KY=
 github.com/rancher/kubernetes-provider-detector v0.1.5 h1:hWRAsWuJOemzGjz/XrbTlM7QmfO4OedvFE3QwXiH60I=
 github.com/rancher/kubernetes-provider-detector v0.1.5/go.mod h1:ypuJS7kP7rUiAn330xG46mj+Nhvym05GM8NqMVekpH0=
 github.com/rancher/lasso v0.2.7 h1:N56Pm8KJSk7gRVYILSGb35QBfjcDDeGFMfwUCivsbeg=
 github.com/rancher/lasso v0.2.7/go.mod h1:L3ol8PdO21KoMhNa3RWjpR3ZBnE70JCAod1nJuOvT1E=
-github.com/rancher/security-scan v0.9.1-rc.1 h1:m7CEgVlEzFU3cAccOnUu9xLeRvOK9HXTiA8bcK8S3gI=
-github.com/rancher/security-scan v0.9.1-rc.1/go.mod h1:s6BaOLsoS6w/oBTqr9u3cqthEoC1nOcuIwK2bdRJISc=
 github.com/rancher/wrangler/v3 v3.5.1 h1:o2iLDoqTTkwVenZ521YhcH/0N2CFktp8aXb0f96aYMU=
 github.com/rancher/wrangler/v3 v3.5.1/go.mod h1:G5moxB9PpU5MUXavc89NS6Mpfgr8Nfmf9DZ3BkGgeYM=
 github.com/robfig/cron v1.2.0 h1:ZjScXvvxeQ63Dbyxy76Fj3AT3Ut0aKsyd2/tl3DTMuQ=

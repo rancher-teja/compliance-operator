@@ -39,6 +39,7 @@ test-image:
 
 build-image: buildx-machine ## build (and load) the container image targeting the current platform.
 	$(IMAGE_BUILDER) build -f package/Dockerfile \
+		--platform=linux/amd64 \
 		--builder $(MACHINE) $(IMAGE_ARGS) \
 		--build-arg VERSION=$(VERSION) -t "$(IMAGE)" $(BUILD_ACTION) .
 	@echo "Built $(IMAGE)"

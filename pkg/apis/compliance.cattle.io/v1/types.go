@@ -119,6 +119,11 @@ type ClusterScanBenchmarkSpec struct {
 
 	CustomBenchmarkConfigMapName      string `json:"customBenchmarkConfigMapName,omitempty"`
 	CustomBenchmarkConfigMapNamespace string `json:"customBenchmarkConfigMapNamespace,omitempty"`
+
+	// STIGVersion is the DISA STIG version number, e.g. "V2".
+	STIGVersion string `json:"stigVersion,omitempty"`
+	// STIGRelease is the DISA STIG release number, e.g. "R3".
+	STIGRelease string `json:"stigRelease,omitempty"`
 }
 
 // +genclient
@@ -152,6 +157,10 @@ type ClusterScanReportSpec struct {
 	BenchmarkVersion string `json:"benchmarkVersion,omitempty"`
 	LastRunTimestamp string `yaml:"last_run_timestamp" json:"lastRunTimestamp"`
 	ReportJSON       string `json:"reportJSON"`
+	// STIGVersion, STIGRelease are copied from the ClusterScanBenchmark
+	// at report generation time so the report is self-contained for compliance tracking.
+	STIGVersion     string `json:"stigVersion,omitempty"`
+	STIGRelease     string `json:"stigRelease,omitempty"`
 }
 
 type ScanImageConfig struct {

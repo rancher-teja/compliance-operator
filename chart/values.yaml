@@ -4,11 +4,11 @@
 
 image:
   operator:
-    repository: rancher/compliance-operator
-    tag: v1.4.1-rc.1
+    repository: teja04783/compliance-operator
+    tag: v1.0.13
   securityScan:
-    repository: rancher/security-scan
-    tag: v0.9.1-rc.1
+    repository: teja04783/security-scan
+    tag: v0.0.4
   sonobuoy:
     repository: rancher/mirrored-sonobuoy-sonobuoy
     tag: v0.57.3
